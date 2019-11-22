@@ -1,0 +1,16 @@
+apiVersion: v1
+entries:
+  haiku-agents:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-11-22T20:39:41.4703785+05:30"
+    description: A Helm chart for haiku-agents
+    digest: f98d1c60ab4476d6c18c861b8ccb463e9809895e2b452fb16038c9e2ee3ce956
+    home: https://github.com/Azure/ClusterConfigurationAgent/haiku-agents
+    name: haiku-agents
+    sources:
+    - https://github.com/Azure/ClusterConfigurationAgent/haiku-agents
+    urls:
+    - https://pasankav.github.io/helmrepo/haiku-agents-0.1.0.tgz
+    version: 0.1.0
+generated: "2019-11-22T20:39:41.4665265+05:30"
