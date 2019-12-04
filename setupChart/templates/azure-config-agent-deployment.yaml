@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-agent
+  namespace: azure-arc
+  labels:
+    app.kubernetes.io/name: azure-arc-k8s
+    app.kubernetes.io/component: config-agent
+  annotations:
+    description: {{ .Chart.Description }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: azure-arc-k8s
+      app.kubernetes.io/component: config-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: azure-arc-k8s
+        app.kubernetes.io/component: config-agent
+    spec:
+      serviceAccountName: azure-arc-operatorsa
+      containers:
+      - name: config-agent
+        image: "{{ .Values.image.repository }}/{{ .Values.image.releaseName }}/{{ index .Values "config-agent" "image" }}:{{ index .Values "config-agent" "tag" }}"
+        imagePullPolicy: {{ .Values.image.imagePullPolicy }}
+        env:
+        - name: AZURE_RESOURCE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: azure-clusterconfig
+              key: AZURE_RESOURCE_NAME
+        - name: AZURE_SUBSCRIPTION_ID
+          valueFrom:
+            configMapKeyRef:
+              name: azure-clusterconfig
+              key: AZURE_SUBSCRIPTION_ID
+        - name: AZURE_RESOURCE_GROUP
+          valueFrom:
+            configMapKeyRef:
+              name: azure-clusterconfig
+              key: AZURE_RESOURCE_GROUP
+        - name: AZURE_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: azure-clusterconfig
+              key: AZURE_REGION
+        - name: CLUSTER_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: azure-clusterconfig
+              key: CLUSTER_TYPE{{ if index .Values "config-agent" "dp_endpoint_override" }}
+        - name: DP_ENDPOINT_OVERRIDE
+          valueFrom:
+            configMapKeyRef:
+              name: azure-clusterconfig
+              key: DP_ENDPOINT_OVERRIDE
+        {{end}}
+        - name: FLUX_CLIENT_DEFAULT_LOCATION
+          valueFrom:
+            configMapKeyRef:
+              name: azure-clusterconfig
+              key: FLUX_CLIENT_DEFAULT_LOCATION

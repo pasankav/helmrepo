@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-agent
+  namespace: azure-arc
+  labels:
+    app.kubernetes.io/name: azure-arc-k8s
+    app.kubernetes.io/component: metrics-agent
+    test: test
+  annotations:
+    description: {{ .Chart.Description }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: azure-arc-k8s
+      app.kubernetes.io/component: metrics-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: azure-arc-k8s
+        app.kubernetes.io/component: metrics-agent
+    spec:
+      serviceAccountName: haiku-operatorsa
+      containers:
+      - name: metrics-agent
+        image: "k8connectrpcontainerregistry.azurecr.io/metricsagent:v14"
+        imagePullPolicy: Always
+      imagePullSecrets:
+        - name: regcred        

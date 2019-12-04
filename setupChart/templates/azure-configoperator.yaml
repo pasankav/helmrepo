@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: azure-arc
+  labels:
+    control-plane: controller-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      serviceAccountName: azure-arc-operatorsa
+      containers:
+        - name: kube-rbac-proxy
+          image: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
+          args:
+            - "--secure-listen-address=0.0.0.0:8443"
+            - "--upstream=http://127.0.0.1:8080/"
+            - "--logtostderr=true"
+            - "--v=10"
+          ports:
+            - containerPort: 8443
+              name: https
+        - name: manager
+          args:
+            - "--metrics-addr=127.0.0.1:8080"
+            - "--enable-leader-election"
+          command:
+          - /data/manager
+          image: "{{ .Values.image.repository }}/{{ .Values.image.releaseName }}/{{ index .Values "config-operator" "image" }}:{{ index .Values "config-operator" "tag" }}"
+          imagePullPolicy: {{ .Values.image.imagePullPolicy }}
+          env:
+            - name: AZURE_RESOURCE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: azure-clusterconfig
+                  key: AZURE_RESOURCE_NAME
+            - name: AZURE_SUBSCRIPTION_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: azure-clusterconfig
+                  key: AZURE_SUBSCRIPTION_ID
+            - name: AZURE_RESOURCE_GROUP
+              valueFrom:
+                configMapKeyRef:
+                  name: azure-clusterconfig
+                  key: AZURE_RESOURCE_GROUP
+            - name: AZURE_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: azure-clusterconfig
+                  key: AZURE_REGION
+            - name: CLUSTER_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: azure-clusterconfig
+                  key: CLUSTER_TYPE
+          resources:
+            limits:
+              cpu: 100m
+              memory: 300Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+      terminationGracePeriodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/port: "8443"
+    prometheus.io/scheme: https
+    prometheus.io/scrape: "true"
+  labels:
+    control-plane: controller-manager
+  name: controller-manager-metrics-service
+  namespace: azure-arc
+spec:
+  ports:
+    - name: https
+      port: 8443
+      targetPort: https
+  selector:
+    control-plane: controller-manager

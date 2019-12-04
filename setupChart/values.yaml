@@ -1,0 +1,83 @@
+# Default values for azure-arc-k8sagents.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+rbac:
+  enabled: true
+
+global:
+  subscriptionId: "1bfbb5d0-917e-4346-9026-1d3b344417f5"
+  resourceGroupName: "pasankav"
+  location: "eastus"
+  resourceName: "ccmettest"
+  tenantId: "72f988bf-86f1-41af-91ab-2d7cd011db47"
+  clientId: "03868624-8d8d-45c1-9e8e-5b8af8dd0088"
+  clientSecret: "107d3f90-dc96-4f4d-83ea-bfdc6b4bcaaf"
+  tags: ""
+
+image:
+  repository: azurearcfork8s.azurecr.io
+  releaseName: arc-preview
+  imagePullPolicy: Always
+      
+connect-agent:
+  image: connect-agent
+  tag: 0.1.0
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 1024Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+      
+  
+    nodeSelector:
+      beta.kubernetes.io/os: linux
+
+    tolerations: []
+
+    affinity: {}
+
+config-operator:
+  image: configoperator
+  tag: 0.1.0
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 1024Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+    nodeSelector:
+      beta.kubernetes.io/os: linux
+
+    tolerations: []
+
+    affinity: {}
+
+config-agent:
+  image: config-agent
+  tag: 0.1.0
+  cluster_type: "ConnectedClusters"
+  dp_endpoint_override: ""
+  #This contains a private build of the fluxctl with some extra features like --git-readonly, --flux-instance-name, --namespaced-scope in install
+  flux_client_default_location: "haikudev.azurecr.io/haiku-demo/fluxctl:0.1.2"
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 1024Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  
+    nodeSelector:
+      beta.kubernetes.io/os: linux
+
+    tolerations: []
+
+    affinity: {}
